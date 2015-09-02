@@ -3,6 +3,9 @@
 import sys
 
 
+MEMORY_SIZE = 30000
+
+
 class SegmentationFault(Exception):
     pass
 
@@ -34,22 +37,18 @@ def _decrement_data_pointer():
 
 
 def _increment_byte():
-    global memory, memory_index
     memory[memory_index] = (memory[memory_index] + 1) % 256
 
 
 def _decrement_byte():
-    global memory, memory_index
     memory[memory_index] = (memory[memory_index] - 1) % 256
 
 
 def _output_byte():
-    global memory, memory_index
     sys.stdout.write(chr(memory[memory_index]))
 
 
 def _input_byte():
-    global memory, memory_index
     while True:
         user_input = raw_input("Enter a single character:")
         if len(user_input) == 1:
@@ -58,15 +57,23 @@ def _input_byte():
 
 
 def _while_byte():
-    global memory, memory_index
     if memory[memory_index] == 0:
         raise Break
 
 
 def _end_while():
-    global memory, memory_index
     if memory[memory_index] != 0:
         raise Continue
+
+
+COMMANDS = {">": _increment_data_pointer,
+            "<": _decrement_data_pointer,
+            "+": _increment_byte,
+            "-": _decrement_byte,
+            ".": _output_byte,
+            ",": _input_byte,
+            "[": _while_byte,
+            "]": _end_while}
 
 
 def _find_braces(program_string):
@@ -94,21 +101,15 @@ def _find_braces(program_string):
     return find_opening_brace, find_closing_brace
 
 
-MEMORY_SIZE = 30000
-memory = [0] * MEMORY_SIZE
-memory_index = 0
-
-COMMANDS = {">": _increment_data_pointer,
-            "<": _decrement_data_pointer,
-            "+": _increment_byte,
-            "-": _decrement_byte,
-            ".": _output_byte,
-            ",": _input_byte,
-            "[": _while_byte,
-            "]": _end_while}
+def _initialise_memory():
+    global memory, memory_index
+    memory = [0] * MEMORY_SIZE
+    memory_index = 0
 
 
 def main(program_string):
+    _initialise_memory()
+
     find_opening_brace, find_closing_brace = _find_braces(program_string)
 
     program_position = 0
@@ -132,3 +133,4 @@ def main(program_string):
 
 if __name__ == "__main__":
     main(sys.argv[1])
+
